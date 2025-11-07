@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Byte&Battle - Code, Compete, Conquer</title>
+    <meta name="description" content="The ultimate coding platform for competitive programming">
+    
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Monaco Editor -->
+    <script src="https://unpkg.com/monaco-editor@0.36.1/min/vs/loader.js"></script>
+    
+    <style>
+        /* Import Google Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        /* CSS Variables */
+        :root {
+            --primary: #21808D;
+            --primary-hover: #1D7480;
+            --bg-light: #FCFCF9;
+            --bg-dark: #1F2121;
+            --text-light: #1F2121;
+            --text-dark: #F5F5F5;
+            --gray: #777C7C;
+            --success: #10B981;
+            --error: #EF4444;
+            --warning: #F59E0B;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-light);
+            color: var(--text-light);
+            transition: background 0.3s, color 0.3s;
+        }
+        
+        body.dark-mode {
+            background: var(--bg-dark);
+            color: var(--text-dark);
+        }
+        
+        /* Header */
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        
+        nav {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+        
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: opacity 0.2s;
+        }
+        
+        nav a:hover {
+            opacity: 0.8;
+        }
+        
+        .auth-section {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: white;
+            color: var(--primary);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+        
+        .btn-secondary:hover {
+            background: white;
+            color: var(--primary);
+        }
+        
+        /* Main Content */
+        main {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        /* Dashboard */
+        .hero {
+            text-align: center;
+            padding: 3rem 0;
+        }
+        
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--gray);
+            margin-bottom: 2rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 3rem 0;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        body.dark-mode .stat-card {
+            background: #2A2C2C;
+        }
+        
+        .stat-card h3 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-card p {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        /* Problems */
+        .problems-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .filter-pills {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .pill {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            border: 2px solid var(--gray);
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .pill.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .problems-grid {
+            display: grid;
+            gap: 1rem;
+        }
+        
+        .problem-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        body.dark-mode .problem-card {
+            background: #2A2C2C;
+        }
+        
+        .problem-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }
+        
+        .problem-card h3 {
+            margin-bottom: 0.5rem;
+        }
+        
+        .difficulty-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+        
+        .difficulty-easy {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+        
+        .difficulty-medium {
+            background: #FED7AA;
+            color: #92400E;
+        }
+        
+        .difficulty-hard {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+        
+        .tags {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .tag {
+            background: #E5E7EB;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+        }
+        
+        /* Problem Detail */
+        .problem-detail {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            height: calc(100vh - 200px);
+        }
+        
+        .problem-description {
+            overflow-y: auto;
+            padding-right: 1rem;
+        }
+        
+        .code-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        #editor {
+            flex: 1;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+        }
+        
+        .editor-controls {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+        }
+        
+        body.dark-mode .modal-content {
+            background: #2A2C2C;
+        }
+        
+        .modal-content h2 {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #E5E7EB;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 2000;
+            animation: slideIn 0.3s;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .toast.success {
+            border-left: 4px solid var(--success);
+        }
+        
+        .toast.error {
+            border-left: 4px solid var(--error);
+        }
+        
+        /* Loading */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .problem-detail {
+                grid-template-columns: 1fr;
+            }
+            
+            nav {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="logo" onclick="showSection('dashboard')">Byte&Battle ⚔️</div>
+        <nav>
+            <a href="#" onclick="showSection('dashboard')">Dashboard</a>
+            <a href="#" onclick="showSection('problems')">Problems</a>
+            <a href="#" onclick="showSection('contests')">Contests</a>
+            <a href="#" onclick="showSection('leaderboard')">Leaderboard</a>
+            <a href="#" id="profileNav" class="hidden" onclick="showSection('profile')">Profile</a>
+            <a href="#" id="adminNav" class="hidden" onclick="showSection('admin')">Admin</a>
+        </nav>
+        <div class="auth-section">
+            <button id="themeToggle" class="btn-secondary" onclick="toggleTheme()">🌙</button>
+            <div id="authButtons">
+                <button class="btn-secondary" onclick="showModal('login')">Login</button>
+                <button class="btn-primary" onclick="showModal('signup')">Sign Up</button>
+            </div>
+            <div id="userMenu" class="hidden">
+                <span id="username"></span>
+                <button class="btn-secondary" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="section">
+            <div class="hero">
+                <h1>Welcome to Byte&Battle ⚔️</h1>
+                <p>Code, Compete, Conquer - The Ultimate Coding Platform</p>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>2,847</h3>
+                    <p>Total Problems</p>
+                </div>
+                <div class="stat-card">
+                    <h3>125K+</h3>
+                    <p>Active Users</p>
+                </div>
+                <div class="stat-card">
+                    <h3>847</h3>
+                    <p>Contests Held</p>
+                </div>
+                <div class="stat-card">
+                    <h3>4.6M+</h3>
+                    <p>Solutions Submitted</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Problems Section -->
+        <section id="problems" class="section hidden">
+            <div class="problems-header">
+                <h2>Problems</h2>
+                <div class="filter-pills">
+                    <button class="pill active" onclick="filterProblems('all')">All</button>
+                    <button class="pill" onclick="filterProblems('Easy')">Easy</button>
+                    <button class="pill" onclick="filterProblems('Medium')">Medium</button>
+                    <button class="pill" onclick="filterProblems('Hard')">Hard</button>
+                </div>
+            </div>
+            <div id="problemsList" class="problems-grid"></div>
+        </section>
+
+        <!-- Problem Detail Section -->
+        <section id="problemDetail" class="section hidden">
+            <button class="btn-secondary" onclick="showSection('problems')" style="margin-bottom: 1rem;">← Back to Problems</button>
+            <div class="problem-detail">
+                <div class="problem-description">
+                    <h2 id="problemTitle"></h2>
+                    <div id="problemDesc"></div>
+                </div>
+                <div class="code-section">
+                    <select id="languageSelect" onchange="changeLanguage()">
+                        <option value="javascript">JavaScript</option>
+                        <option value="python">Python</option>
+                        <option value="java">Java</option>
+                        <option value="cpp">C++</option>
+                    </select>
+                    <div id="editor"></div>
+                    <div class="editor-controls">
+                        <button class="btn-secondary" onclick="runCode()">Run Code</button>
+                        <button class="btn-primary" onclick="submitCode()">Submit</button>
+                    </div>
+                    <div id="output"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Other sections (Contests, Leaderboard, etc.) -->
+        <section id="contests" class="section hidden">
+            <h2>Contests</h2>
+            <p>Coming soon...</p>
+        </section>
+
+        <section id="leaderboard" class="section hidden">
+            <h2>Leaderboard</h2>
+            <div id="leaderboardList"></div>
+        </section>
+
+        <section id="profile" class="section hidden">
+            <h2>Profile</h2>
+            <div id="profileContent"></div>
+        </section>
+
+        <section id="admin" class="section hidden">
+            <h2>Admin Panel</h2>
+            <p>Admin controls...</p>
+        </section>
+    </main>
+
+    <!-- Modals -->
+    <div id="loginModal" class="modal hidden">
+        <div class="modal-content">
+            <h2>Login</h2>
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 1rem;">Login</button>
+                <button type="button" class="btn-secondary" onclick="closeModals()" style="width: 100%; margin-top: 0.5rem;">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="signupModal" class="modal hidden">
+        <div class="modal-content">
+            <h2>Sign Up</h2>
+            <form id="signupForm" onsubmit="handleSignup(event)">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="signupEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="signupUsername" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="signupPassword" required minlength="6">
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 1rem;">Sign Up</button>
+                <button type="button" class="btn-secondary" onclick="closeModals()" style="width: 100%; margin-top: 0.5rem;">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Supabase Configuration
+        const SUPABASE_URL = 'YOUR_SUPABASE_URL_HERE'
+        const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY_HERE'
+        const { createClient } = supabase
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+        
+        // Global State
+        let currentUser = null
+        let currentProblem = null
+        let editor = null
+        
+        // Initialize
+        async function init() {
+            await checkAuth()
+            loadProblems()
+            setupMonaco()
+        }
+        
+        // Authentication
+        async function checkAuth() {
+            const { data: { user } } = await supabaseClient.auth.getUser()
+            if (user) {
+                currentUser = user
+                const { data: profile } = await supabaseClient
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', user.id)
+                    .single()
+                
+                if (profile) {
+                    showAuthenticatedUI(profile)
+                }
+            }
+        }
+        
+        function showAuthenticatedUI(profile) {
+            document.getElementById('authButtons').classList.add('hidden')
+            document.getElementById('userMenu').classList.remove('hidden')
+            document.getElementById('username').textContent = profile.username
+            document.getElementById('profileNav').classList.remove('hidden')
+            
+            if (profile.role === 'admin') {
+                document.getElementById('adminNav').classList.remove('hidden')
+            }
+        }
+        
+        async function handleLogin(e) {
+            e.preventDefault()
+            const email = document.getElementById('loginEmail').value
+            const password = document.getElementById('loginPassword').value
+            
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
+                email,
+                password
+            })
+            
+            if (error) {
+                showToast(error.message, 'error')
+            } else {
+                showToast('Login successful!', 'success')
+                closeModals()
+                location.reload()
+            }
+        }
+        
+        async function handleSignup(e) {
+            e.preventDefault()
+            const email = document.getElementById('signupEmail').value
+            const username = document.getElementById('signupUsername').value
+            const password = document.getElementById('signupPassword').value
+            
+            const { data, error } = await supabaseClient.auth.signUp({
+                email,
+                password,
+                options: {
+                    data: { username }
+                }
+            })
+            
+            if (error) {
+                showToast(error.message, 'error')
+            } else {
+                showToast('Check your email for confirmation!', 'success')
+                closeModals()
+            }
+        }
+        
+        async function logout() {
+            await supabaseClient.auth.signOut()
+            location.reload()
+        }
+        
+        // Problems
+        async function loadProblems() {
+            const { data, error } = await supabaseClient
+                .from('problems')
+                .select('*')
+                .order('id', { ascending: true })
+            
+            if (data) {
+                displayProblems(data)
+            }
+        }
+        
+        function displayProblems(problems) {
+            const list = document.getElementById('problemsList')
+            list.innerHTML = problems.map(p => `
+                <div class="problem-card" onclick="openProblem(${p.id})">
+                    <h3>${p.title}<span class="difficulty-badge difficulty-${p.difficulty.toLowerCase()}">${p.difficulty}</span></h3>
+                    <div class="tags">
+                        ${JSON.parse(p.tags || '[]').map(tag => `<span class="tag">${tag}</span>`).join('')}
+                    </div>
+                    <p style="margin-top: 0.5rem; color: var(--gray);">Acceptance: ${p.acceptance_rate}%</p>
+                </div>
+            `).join('')
+        }
+        
+        async function openProblem(id) {
+            const { data, error } = await supabaseClient
+                .from('problems')
+                .select('*')
+                .eq('id', id)
+                .single()
+            
+            if (data) {
+                currentProblem = data
+                document.getElementById('problemTitle').textContent = data.title
+                document.getElementById('problemDesc').innerHTML = `
+                    <p>${data.description}</p>
+                    <h3>Constraints</h3>
+                    <p>${data.constraints}</p>
+                `
+                
+                if (editor && data.starter_code) {
+                    const code = JSON.parse(data.starter_code)
+                    editor.setValue(code.javascript || '// Write your code here')
+                }
+                
+                showSection('problemDetail')
+            }
+        }
+        
+        // Monaco Editor
+        function setupMonaco() {
+            require.config({ paths: { vs: 'https://unpkg.com/monaco-editor@0.36.1/min/vs' }})
+            require(['vs/editor/editor.main'], () => {
+                editor = monaco.editor.create(document.getElementById('editor'), {
+                    value: '// Write your code here',
+                    language: 'javascript',
+                    theme: 'vs-dark',
+                    minimap: { enabled: false },
+                    fontSize: 14
+                })
+            })
+        }
+        
+        async function runCode() {
+            const code = editor.getValue()
+            showToast('Running code...', 'success')
+            // Implement Piston API call here
+        }
+        
+        async function submitCode() {
+            if (!currentUser) {
+                showToast('Please login to submit', 'error')
+                return
+            }
+            
+            const code = editor.getValue()
+            const { data, error } = await supabaseClient
+                .from('submissions')
+                .insert([{
+                    user_id: currentUser.id,
+                    problem_id: currentProblem.id,
+                    code: code,
+                    language: 'javascript',
+                    status: 'pending'
+                }])
+            
+            if (error) {
+                showToast('Submission failed', 'error')
+            } else {
+                showToast('Code submitted successfully!', 'success')
+            }
+        }
+        
+        // UI Functions
+        function showSection(name) {
+            document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'))
+            document.getElementById(name).classList.remove('hidden')
+        }
+        
+        function showModal(type) {
+            closeModals()
+            document.getElementById(type + 'Modal').classList.remove('hidden')
+        }
+        
+        function closeModals() {
+            document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden'))
+        }
+        
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div')
+            toast.className = `toast ${type}`
+            toast.textContent = message
+            document.body.appendChild(toast)
+            setTimeout(() => toast.remove(), 3000)
+        }
+        
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode')
+            document.getElementById('themeToggle').textContent = 
+                document.body.classList.contains('dark-mode') ? '☀️' : '🌙'
+        }
+        
+        function filterProblems(difficulty) {
+            document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'))
+            event.target.classList.add('active')
+            // Implement filtering logic
+        }
+        
+        // Start
+        init()
+    </script>
+</body>
+</html>
